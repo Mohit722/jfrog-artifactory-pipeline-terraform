@@ -72,7 +72,7 @@ resource "aws_instance" "example" {
       "sudo chown -R 1030:1030 ~/jfrog/artifactory/var",
 
       # Run the JFrog Artifactory Docker container
-      "sudo docker run --name artifactory -d -v ~/jfrog/artifactory/var:/var/opt/jfrog/artifactory -p 8081:8081 -p 8082:8082 docker.bintray.io/jfrog/artifactory-oss:latest"
+      "sudo docker run --name artifactory -d -v ~/jfrog/artifactory/var:/var/opt/jfrog/artifactory -p 8081:8081 -p 8082:8082 --restart unless-stopped --memory 4g --cpus 2 docker.bintray.io/jfrog/artifactory-oss:latest"
     ]
   }
 }

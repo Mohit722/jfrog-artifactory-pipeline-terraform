@@ -44,51 +44,56 @@ resource "aws_instance" "example" {
   }
 
   # Provisioner to set up JFrog Artifactory
-provisioner "remote-exec" {
-  inline = [
-    # Wait for the instance to be ready
-    "sleep 40",
+  provisioner "remote-exec" {
+    inline = [
+      # Wait for the instance to be ready
+      "sleep 40",
 
-    # Update the hostname
-    "sudo hostnamectl set-hostname Artifactory",
-    "sleep 7",
+      # Update the hostname
+      "sudo hostnamectl set-hostname Artifactory",
+      "sleep 7",
 
-    # Update the package list
-    "sudo apt-get update -y",
+      # Update the package list
+      "sudo apt-get update -y",
 
-    # Install Docker and Docker Compose
-    "sudo apt-get install -y docker-compose -y",
+      # Install Docker and Docker Compose
+      "sudo apt-get install -y docker-compose -y",
 
-    # Create Docker Compose file
-    "cat <<EOF | sudo tee /home/ubuntu/docker-compose.yml",
-    "version: '3.3'",
-    "services:",
-    "  artifactory-service:",
-    "    image: docker.bintray.io/jfrog/artifactory-oss:7.49.6",
-    "    container_name: artifactory",
-    "    restart: always",
-    "    networks:",
-    "      - ci_net",
-    "    ports:",
-    "      - 8081:8081",
-    "      - 8082:8082",
-    "    volumes:",
-    "      - artifactory:/var/opt/jfrog/artifactory",
-    "volumes:",
-    "  artifactory:",
-    "networks:",
-    "  ci_net:",
-    "EOF",
+      # Create Docker Compose file
+      "cat <<EOF | sudo tee /home/ubuntu/docker-compose.yml",
+      "version: '3.3'",
+      "services:",
+      "  artifactory-service:",
+      "    image: docker.bintray.io/jfrog/artifactory-oss:7.49.6",
+      "    container_name: artifactory",
+      "    restart: always",
+      "    networks:",
+      "      - ci_net",
+      "    ports:",
+      "      - 8081:8081",
+      "      - 8082:8082",
+      "    volumes:",
+      "      - artifactory:/var/opt/jfrog/artifactory",
+      "volumes:",
+      "  artifactory:",
+      "networks:",
+      "  ci_net:",
+      "EOF",
 
-    # Run the JFrog Artifactory using Docker Compose
-    "sudo docker-compose -f /home/ubuntu/docker-compose.yml up -d",
+      # Run the JFrog Artifactory using Docker Compose
+      "sudo docker-compose -f /home/ubuntu/docker-compose.yml up -d",
 
-    # Optional: List Docker images and running containers
-    "sudo docker images",
-    "sudo docker ps",
+      # Optional: List Docker images and running containers
+      "sudo docker images",
+      "sudo docker ps",
 
-    # Optional: Test the Artifactory endpoint
-    "curl localhost:8081"
+      # Optional: Test the Artifactory endpoint
+      "curl localhost:8081"
   ]
+ }
 }
+# Output the Artifactory dashboard link
+output "artifactory_dashboard_url" {
+  value = "http://${aws_instance.example.public_ip}:8081"
+  description = "URL to access the JFrog Artifactory dashboard."
 }

@@ -43,36 +43,52 @@ resource "aws_instance" "example" {
     host        = self.public_ip
   }
 
-  # Provisioner to install Docker and set up JFrog Artifactory
-  provisioner "remote-exec" {
-    inline = [
-      # Wait for the instance to be ready
-      "sleep 40",
-      
-      # Update the package list and install required certificates
-      "sudo apt-get update -y",
-      "sudo apt-get install -y ca-certificates curl",
+  # Provisioner to set up JFrog Artifactory
+provisioner "remote-exec" {
+  inline = [
+    # Wait for the instance to be ready
+    "sleep 40",
 
-      # Install Docker prerequisites
-      "sudo install -m 0755 -d /etc/apt/keyrings",
-      "sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc",
-      "sudo chmod a+r /etc/apt/keyrings/docker.asc",
+    # Update the hostname
+    "sudo hostnamectl set-hostname Artifactory",
+    "sleep 7",
 
-      # Add Docker repository
-      "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null",
+    # Update the package list
+    "sudo apt-get update -y",
 
-      # Install Docker
-      "sudo apt-get update -y",
-      "sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y",
+    # Install Docker and Docker Compose
+    "sudo apt-get install -y docker-compose -y",
 
-      # Create Artifactory directories and set permissions
-      "mkdir -p ~/jfrog/artifactory/var/etc",
-      "chmod -R 777 ~/jfrog",
-      "touch ~/jfrog/artifactory/var/etc/system.yaml",
-      "sudo chown -R 1030:1030 ~/jfrog/artifactory/var",
+    # Create Docker Compose file
+    "cat <<EOF | sudo tee /home/ubuntu/docker-compose.yml",
+    "version: '3.3'",
+    "services:",
+    "  artifactory-service:",
+    "    image: docker.bintray.io/jfrog/artifactory-oss:7.49.6",
+    "    container_name: artifactory",
+    "    restart: always",
+    "    networks:",
+    "      - ci_net",
+    "    ports:",
+    "      - 8081:8081",
+    "      - 8082:8082",
+    "    volumes:",
+    "      - artifactory:/var/opt/jfrog/artifactory",
+    "volumes:",
+    "  artifactory:",
+    "networks:",
+    "  ci_net:",
+    "EOF",
 
-      # Run the JFrog Artifactory Docker container
-      "sudo docker run --name artifactory -d -v ~/jfrog/artifactory/var:/var/opt/jfrog/artifactory -p 8081:8081 -p 8082:8082 --restart unless-stopped --memory 4g --cpus 2 docker.bintray.io/jfrog/artifactory-oss:latest"
-    ]
-  }
+    # Run the JFrog Artifactory using Docker Compose
+    "sudo docker-compose -f /home/ubuntu/docker-compose.yml up -d",
+
+    # Optional: List Docker images and running containers
+    "sudo docker images",
+    "sudo docker ps",
+
+    # Optional: Test the Artifactory endpoint
+    "curl localhost:8081"
+  ]
+}
 }

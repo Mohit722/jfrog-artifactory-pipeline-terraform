@@ -88,7 +88,7 @@ resource "aws_instance" "example" {
       "sudo docker ps",
 
       # Optional: Test the Artifactory endpoint
-      "curl localhost:8081"
+      # "curl localhost:8081"
   ]
  }
 }

@@ -50,14 +50,14 @@ Before setting up your Jenkins pipeline, you need to install the following plugi
 
 # Repository Structure
 
-
+'''
 .
 ├── Jenkinsfile        # Jenkins pipeline configuration
 └── terraform          # Terraform folder containing infrastructure files
     ├── main.tf       # Main Terraform configuration file
     └── security_group_rules.tf # Security group rules for inbound traffic
 
-
+'''
 
 # Getting Started
 

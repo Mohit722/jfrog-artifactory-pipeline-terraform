@@ -19,7 +19,7 @@ Before you begin, ensure you have the following:
 Before setting up your Jenkins pipeline, you need to install the following plugins in Jenkins:
 
 1. Amazon Web Services (AWS) Credentials - For managing AWS credentials in Jenkins.
-2. Artifactory - For doing configuraation in jenkins to connect to Jfrog artifactory.
+2. Artifactory - For doing configuration in jenkins to connect with Jfrog artifactory.
 3. Git Plugin - For pulling code from a Git repository.
 
 # Steps to Install Jenkins Plugins
